@@ -6,12 +6,65 @@ var app = express();
 var port = 8000;
 app.use(function (req, res, next) {
     console.log("this is logging middle ware");
-    console.log(req.rawHeaders[1]);
     next();
 });
-app.get("/", function (req, res) {
-    console.log(req);
-    res.send({ cats: app_model_1.Cat });
+app.use(express.json);
+app.get("/cats", function (req, res) {
+    try {
+        var cats = app_model_1.Cat;
+        res.status(200).send({
+            success: true,
+            data: {
+                cats: cats,
+            },
+        });
+    }
+    catch (e) {
+        res.status(400).send({
+            success: false,
+            error: e,
+        });
+    }
+});
+app.get("/cats/:id", function (req, res) {
+    try {
+        var params_1 = req.params;
+        var cat = app_model_1.Cat.find(function (cat) {
+            return cat.id === params_1.id;
+        });
+        res.status(200).send({
+            success: true,
+            data: {
+                cat: cat,
+            },
+        });
+    }
+    catch (e) {
+        res.status(400).send({
+            success: false,
+            error: e,
+        });
+    }
+});
+app.post("/cats", function (req, res) {
+    try {
+        var data = req.body;
+        console.log(data);
+        app_model_1.Cat.push(data);
+        res.status(200).send({
+            success: true,
+            data: { data: data },
+        });
+    }
+    catch (error) {
+        res.status(400).send({
+            success: false,
+            error: error,
+        });
+    }
+});
+app.use(function (req, res, next) {
+    res.send({ error: "404 not found error" });
 });
 app.listen(port, function () {
     console.log("Example app listening at http://localhost:" + port);
