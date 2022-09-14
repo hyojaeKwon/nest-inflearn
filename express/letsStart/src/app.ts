@@ -2,30 +2,49 @@ import * as express from "express";
 import { Cat, CatType } from "./cats/cats.model";
 import catsRouter from "./cats/cats.route";
 
-const app: express.Express = express();
-// instance of express
+//* Singleton
+class Server {
+  public app: express.Application;
 
-const port: number = 8000;
+  constructor() {
+    const app: express.Application = express();
+    this.app = app;
+  }
 
-// loagging middleware
-app.use((req, res, next) => {
-  console.log("this is logging middle ware");
-  next();
-});
+  private setRoute() {
+    // 중간 route겸 middle ware 추가
+    // router 분리
+    this.app.use(catsRouter);
+  }
 
-//* json middleware
-app.use(express.json());
+  private setMiddleWare() {
+    this.app.use((req, res, next) => {
+      console.log("this is logging middle ware");
+      next();
+    });
 
-// 중간 route겸 middle ware 추가
-// router 분리
-app.use(catsRouter);
+    //* json middleware
+    this.app.use(express.json());
 
-// 잘못된 url
-app.use((req, res, next) => {
-  res.send({ error: "404 not found error" });
-});
+    this.setRoute();
 
-// opening a server
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
-});
+    // 잘못된 url
+    this.app.use((req, res, next) => {
+      res.send({ error: "404 not found error" });
+    });
+  }
+
+  public listen() {
+    this.setMiddleWare();
+    this.app.listen(8000, () => {
+      console.log(`Example app listening at http://localhost:${port}`);
+    });
+  }
+}
+
+function init() {
+  const server = new Server();
+  server.listen();
+}
+
+init();
